@@ -4,6 +4,7 @@ import com.alexmore.springSecurity.DTO.LoginRequest;
 import com.alexmore.springSecurity.DTO.UserCreatedResponseDTO;
 import com.alexmore.springSecurity.DTO.UserLoginDetailDTO;
 import com.alexmore.springSecurity.DTO.UserRequestDTO;
+import com.alexmore.springSecurity.Exceptions.ErrorCredentialsException;
 import com.alexmore.springSecurity.Exceptions.UserExistException;
 import com.alexmore.springSecurity.model.User;
 import com.alexmore.springSecurity.repository.UserRepository;
@@ -55,12 +56,12 @@ public class UserService {
         //usamos el metodo de getUserLoginDetailByUsername para verificar si el usuario existe
         UserLoginDetailDTO userLoginDetailDTO = getUserLoginDetailByUsername(loginRequest.getUsername());
         if (userLoginDetailDTO == null) {
-            throw new RuntimeException("Invalid username or password.");
+            throw new ErrorCredentialsException("Invalid username or password.");
         }
         //usamos el metodo isPasswordCorrect para verificar la contraseña
         boolean isPasswordCorrect= isPasswordCorrect(loginRequest.getPassword(), userLoginDetailDTO.getPassword());
         if(!isPasswordCorrect){
-            throw new RuntimeException("Invalid username or password.");
+            throw new ErrorCredentialsException("Invalid username or password.");
         }
     }
 
