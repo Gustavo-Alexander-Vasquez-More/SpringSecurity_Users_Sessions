@@ -45,7 +45,7 @@ public class WebSecurityConfig {
                         .accessDeniedHandler((request, response, accessDeniedException) -> {
                             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                             response.setContentType("application/json");
-                            response.getWriter().write("{\"status\": 403, \"message\": \"No tienes los permisos necesarios (Rol insuficiente)\"}");
+                            response.getWriter().write("{\"status\": 403, \"message\": \"You do not have the necessary permissions (Insufficient role)\"}");
                         })
                 );
 
