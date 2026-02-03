@@ -19,6 +19,35 @@ public class JwtTokenUtilService {
     @Value("${jwt.expiration}")
     private Long expiration;
 
+    //extractUsername
+    //Servicio para extraer el nombre de usuario del token JWT
+    public String extractUsername(String token) {
+        return Jwts.parser()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .getSubject();
+    }
+
+    //isTokenExpired
+    //Servicio para verificar si el token JWT ha expirado
+    public boolean isTokenExpired(String token) {
+        java.util.Date expirationDate = Jwts.parser()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .getExpiration();
+        return expirationDate.before(new java.util.Date());
+    }
+
+    //validateToken
+    //Servicio para validar el token JWT
+    public boolean validateToken(String token, String username) {
+        String extractedUsername = extractUsername(token);
+        return (extractedUsername.equals(username) && !isTokenExpired(token));
+    }
 
     public String generateToken(String username) {
         //Generamos el token JWT usando la libreria Jwts

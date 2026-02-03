@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -13,6 +14,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class WebSecurityConfig {
 
     //Configuración de seguridad HTTP, permitimos acceso público a /users/**
@@ -29,6 +31,7 @@ public class WebSecurityConfig {
                 // DESACTIVA esto por completo para que no interfiera en el Login
                 .httpBasic(basic -> basic.disable())
                 .formLogin(form -> form.disable())
+                .addFilterBefore(authenticationJwtTokenFilter(), org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class) // Agrega el filtro JWT antes del filtro de autenticación de Spring Security
 
                 // Mantén esto pero solo como respaldo, tu ControllerAdvice debería hacer el resto
                 .exceptionHandling(exception -> exception
@@ -37,6 +40,12 @@ public class WebSecurityConfig {
                             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                             response.setContentType("application/json");
                             response.getWriter().write("{\"status\": 401, \"message\": \"No autorizado\"}");
+                        })
+                        // Manejo de acceso denegado (rol insuficiente)
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                            response.setContentType("application/json");
+                            response.getWriter().write("{\"status\": 403, \"message\": \"No tienes los permisos necesarios (Rol insuficiente)\"}");
                         })
                 );
 
