@@ -18,12 +18,12 @@ public class UserController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('SUPERADMIN')")
     public String getUserByUsername() {
         return "Hola mundo";
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('SUPERADMIN')")
     public ResponseEntity<UserCreatedResponseDTO> createUser(@RequestBody @Valid UserRequestDTO userRequestDTO) {
 
         UserCreatedResponseDTO createdUser = userService.createUser(userRequestDTO);
