@@ -12,8 +12,9 @@ import javax.crypto.SecretKey;
 @Service
 public class JwtTokenUtilService {
 
-    // Esto genera una llave segura de 512 bits automáticamente al iniciar el servicio
-    private final SecretKey key = Keys.secretKeyFor(SignatureAlgorithm.HS512);
+    //Extraemos la clave secreta del application.properties
+    @Value("${jwt.secret}")
+    private String secret;
 
     //Extraemos el tiempo de expiracion del token
     @Value("${jwt.expiration}")
@@ -23,7 +24,7 @@ public class JwtTokenUtilService {
     //Servicio para extraer el nombre de usuario del token JWT
     public String extractUsername(String token) {
         return Jwts.parser()
-                .setSigningKey(key)
+                .setSigningKey(secret)
                 .build()
                 .parseClaimsJws(token)
                 .getBody()
@@ -34,7 +35,7 @@ public class JwtTokenUtilService {
     //Servicio para verificar si el token JWT ha expirado
     public boolean isTokenExpired(String token) {
         java.util.Date expirationDate = Jwts.parser()
-                .setSigningKey(key)
+                .setSigningKey(secret)
                 .build()
                 .parseClaimsJws(token)
                 .getBody()
@@ -55,7 +56,7 @@ public class JwtTokenUtilService {
                 .setSubject(username)
                 .setIssuedAt(new java.util.Date())
                 .setExpiration(new java.util.Date(System.currentTimeMillis() + expiration))
-                .signWith(key)
+                .signWith( Keys.hmacShaKeyFor(secret.getBytes()), SignatureAlgorithm.HS256)
                 .compact();
     }
 
