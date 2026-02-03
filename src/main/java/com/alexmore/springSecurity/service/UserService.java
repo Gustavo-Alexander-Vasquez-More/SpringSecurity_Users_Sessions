@@ -1,6 +1,8 @@
 package com.alexmore.springSecurity.service;
 
+import com.alexmore.springSecurity.DTO.LoginRequest;
 import com.alexmore.springSecurity.DTO.UserCreatedResponseDTO;
+import com.alexmore.springSecurity.DTO.UserLoginDetailDTO;
 import com.alexmore.springSecurity.DTO.UserRequestDTO;
 import com.alexmore.springSecurity.Exceptions.UserExistException;
 import com.alexmore.springSecurity.model.User;
@@ -24,10 +26,48 @@ public class UserService {
         return bCryptPasswordEncoder.encode(password);
     }
 
+    //Servicio para obtener un usuario por su nombre de usuario
+    public User getUserByUsername(String username) {
+        return userRepository.findByUsername(username).orElse(null);
+    }
+
+    //Servicio para extraer un usuario por su username
+    public UserLoginDetailDTO getUserLoginDetailByUsername(String username) {
+        User user = getUserByUsername(username);
+        if (user != null) {
+            return new UserLoginDetailDTO(user.getUsername(), user.getPassword());
+        }
+        return null;
+    }
+
+    //Servicio para verificar si un usuario existe por su nombre de usuario
+    public boolean userExists(String username) {
+        return userRepository.existsByUsername(username);
+    }
+
+    //Servicio para verificar si la contraseña de un usuario es correcta usando Bcrypt
+    public boolean isPasswordCorrect(String rawPassword, String hashedPassword) {
+        return bCryptPasswordEncoder.matches(rawPassword, hashedPassword);
+    }
+
+    //Servicio para verificar las credenciales de un usuario
+    public void verifyCredentials(LoginRequest loginRequest) {
+        //usamos el metodo de getUserLoginDetailByUsername para verificar si el usuario existe
+        UserLoginDetailDTO userLoginDetailDTO = getUserLoginDetailByUsername(loginRequest.getUsername());
+        if (userLoginDetailDTO == null) {
+            throw new RuntimeException("Invalid username or password.");
+        }
+        //usamos el metodo isPasswordCorrect para verificar la contraseña
+        boolean isPasswordCorrect= isPasswordCorrect(loginRequest.getPassword(), userLoginDetailDTO.getPassword());
+        if(!isPasswordCorrect){
+            throw new RuntimeException("Invalid username or password.");
+        }
+    }
+
     //Servicio para crear un usuario con contraseña hasheada
     public UserCreatedResponseDTO createUser(UserRequestDTO userRequestDTO) {
         //Primero verificamos que no exista el usuario
-        boolean userExists=userRepository.existsByUsername(userRequestDTO.getUsername());
+        boolean userExists= userExists(userRequestDTO.getUsername());
         if(userExists){
             throw new UserExistException("The username '"+userRequestDTO.getUsername()+"' is already taken.");
         }
